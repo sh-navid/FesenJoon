@@ -1,0 +1,7 @@
+1: Hello there
+1: Hi there
+2: Goodbye
+2: Bye bye
+3: I do not have access to the current time
+4: I am doing well, thank you for asking
+4: I'm great

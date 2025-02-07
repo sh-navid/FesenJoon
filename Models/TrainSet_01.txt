@@ -1,0 +1,12 @@
+1, hello
+1, hi
+2, bye
+2, bye bye
+2, good bye
+2, goodbye
+3, time
+3, what is the time
+3, what time is it?
+4, how are you?
+4, are you well
+4, are you ok

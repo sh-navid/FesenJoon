@@ -1,64 +1,59 @@
 import tkinter as tk
+from pynput import keyboard
 import sys
-import os 
 
-class FloatingButton:
+class FloatingImage:
     def __init__(self, master):
         self.master = master
 
-        # Make the window stay on top
+        master.overrideredirect(True)
+        master.attributes('-alpha', 0.0)
         master.attributes('-topmost', True)
 
-        # Remove window decorations (title bar, borders)
-        master.overrideredirect(True)
-
-        # Make background transparent
-        master.attributes('-alpha', 0.0)
-
-        # Load the image
         try:
-            self.image = tk.PhotoImage(file=sys.path[0] + "/LogoX.png")
+            self.image = tk.PhotoImage(file=sys.path[0] + "/Back.png")
+            master.geometry(f"{self.image.width()}x{self.image.height()}")
         except tk.TclError as e:
             print(f"Error loading image: {e}. Make sure the file exists and is a valid image.")
             self.image = None
 
-        # Create the button with the image
         if self.image:
-            self.button = tk.Button(master, image=self.image, command=self.on_click, borderwidth=0,
-                                    highlightthickness=0)
-            self.button.pack()
+            self.label = tk.Label(master, image=self.image)
+            self.label.pack(fill=tk.BOTH, expand=True)
+
+        self.text_label = tk.Label(master, text="Hello, I'm Nabot!", justify="center", borderwidth=2, relief="solid")
+        self.text_label.place(relx=0.5, rely=0.8, anchor="center")
+
+        self.center_window()
+        self.master.withdraw()
+
+    def center_window(self):
+        screen_width = self.master.winfo_screenwidth()
+        screen_height = self.master.winfo_screenheight()
+        window_width = self.image.width()
+        window_height = self.image.height()
+        x = (screen_width // 2) - (window_width // 2)
+        y = (screen_height // 2) - (window_height // 2)
+        self.master.geometry(f"{window_width}x{window_height}+{x}+{y}")
+
+    def toggle_window(self):
+        if self.master.winfo_viewable():
+            self.master.withdraw()
         else:
-            # If no image, create a fallback text button
-            self.button = tk.Button(master, text="Click on Nabot", command=self.on_click)
-            self.button.pack()
+            self.master.deiconify()
 
-        # Allow dragging
-        self.button.bind("<ButtonPress-1>", self.start_move)
-        self.button.bind("<ButtonRelease-1>", self.stop_move)
-        self.button.bind("<B1-Motion>", self.do_move)
-
-        self.x = 0
-        self.y = 0
-
-    def on_click(self):
-        # Replace print with notify-send
-        os.system('notify-send "Nabot" "Hey; Nabot is here"')
-
-    def start_move(self, event):
-        self.x = event.x
-        self.y = event.y
-
-    def stop_move(self, event):
-        self.x = None
-        self.y = None
-
-    def do_move(self, event):
-        deltax = event.x - self.x
-        deltay = event.y - self.y
-        x = self.master.winfo_x() + deltax
-        y = self.master.winfo_y() + deltay
-        self.master.geometry(f"+{x}+{y}")
+def on_hotkey_press(key):
+    global floating_image
+    try:
+        if key == keyboard.Key.ctrl_l or key == keyboard.Key.ctrl_r:
+            floating_image.toggle_window()
+    except AttributeError:
+        pass
 
 root = tk.Tk()
-floating_button = FloatingButton(root)
+floating_image = FloatingImage(root)
+
+listener = keyboard.Listener(on_press=on_hotkey_press)
+listener.start()
+
 root.mainloop()

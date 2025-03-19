@@ -1,4 +1,6 @@
 # FesenJoon
+- FesenJoon & Nabot
+
 ## AI
 - Link to [AI Concepts](/AI.md)
 

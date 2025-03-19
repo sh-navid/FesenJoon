@@ -1,0 +1,12 @@
+build
+
+.idea
+.gradle
+
+gradle
+gradlew
+gradlew.*
+local.properties
+gradle.properties
+
+proguard-rules.pro

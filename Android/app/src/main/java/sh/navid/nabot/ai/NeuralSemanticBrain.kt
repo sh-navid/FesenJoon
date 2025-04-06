@@ -16,6 +16,7 @@ class Neuron<T>(val id: Int, val value: T, val type: RelationType) {
 enum class RelationType {
     Node,
     Type,
+    Command
 }
 
 class Relation<T>(
@@ -72,11 +73,13 @@ class LiveNet<T : Any> {
         addRelation(nodeA.id, nodeB.id, type)
     }
 
+    // Enhanced this function thanks to perplexity
     fun identify(text: String): Data {
         val d = Data(Data.clean(text))
         val tokens = d.tokenize()
         val counts = mutableMapOf<String, Int>()
 
+        // Check direct associations
         for (t in tokens) {
             nodes.firstOrNull { it.value == t }?.let { n1 ->
                 network.filter { it.a == n1.id && it.type == RelationType.Type }.forEach { r ->
@@ -88,11 +91,31 @@ class LiveNet<T : Any> {
             }
         }
 
-        val maxEntry = counts.maxByOrNull { it.key }
+        // Check indirect associations (relations between words)
+        for (i in tokens.indices) {
+            nodes.firstOrNull { it.value == tokens[i] }?.let { n1 ->
+                for (j in i + 1 until tokens.size) {
+                    nodes.firstOrNull { it.value == tokens[j] }?.let { n2 ->
+                        network.filter { it.a == n1.id && it.b == n2.id && it.type == RelationType.Node }.forEach { _ ->
+                            // If there's a relation between two words, check their connections to types
+                            network.filter { it.a == n2.id && it.type == RelationType.Type }.forEach { r ->
+                                nodes.filter { it.id == r.b }.forEach { n3 ->
+                                    counts[n3.value.toString()] =
+                                        counts.getOrDefault(n3.value.toString(), 0) + 1
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        val maxEntry = counts.maxByOrNull { it.value }
         d.type = maxEntry?.key?.let { Integer.parseInt(it) } ?: -1
 
         return d
     }
+
 }
 
 class Brain {
